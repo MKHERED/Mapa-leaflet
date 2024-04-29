@@ -3,7 +3,7 @@ var map = L.map('map', {
     zoomControl: false,
     zoom: 5,
     //minZoom: 10,
-    //maxZoom: 18,
+    maxZoom: 17,
     //maxBounds: [[37.65882,-5.01595], [38.03836,-4.33411]]
 });
 
@@ -18,6 +18,8 @@ L.control.zoom({
   zoomOutTitle: 'Alejar',
   position: "topright",
 }).addTo(map)
+
+//L.control.attribution(, options)
 
 /* Práctica 6.- Añadiendo capa vectorial GeoJSON (JQuery) */
 /*
@@ -51,11 +53,11 @@ L.control.layers(baseMaps, overlayMaps,{
 }).addTo(map);
 */
 /* Práctica 8.- Escala */
-/*
+
 L.control.scale({
   imperial: false
 }).addTo(map);
-*/
+
 /* Práctica 10.- Información de los centros */
 /*
 function centrosInfoPopup(feature, layer) {
@@ -183,10 +185,10 @@ getSismo = async () => {
 */
 
 
-  function objetoReciente(lat, long){
+  function objetoReciente(localizado, lat, long, fecha, hora, profundidad, magnitud){
     barra = document.querySelector("#sidebar")
     //<div class="border-top border-bottom pb-1 p-2"><b>a 20 km de tal parte</b><p>Fecha y hora · profundidad 0.0km <br> Magnitud 3.2</p></div>
-    barra.insertAdjacentHTML('afterbegin','<div class="border-top border-bottom pb-1 p-2 bg-light" onclick="acercar('+lat+','+long+')"><b>a 20 km de tal parte</b><p>Fecha y hora · profundidad 0.0km <br> Magnitud 3.2</p></div>')
+    barra.insertAdjacentHTML('afterbegin','<div class="border-top border-bottom pb-1 p-2 bg-light" onclick="acercar('+lat+','+long+')"><b>'+localizado+'</b><p>'+fecha+' '+hora+' · '+profundidad+' <br>Magnitud: '+magnitud+'</p></div>')
   }
 
   marcador = L.geoJson(sismosOcurridos, {
@@ -214,7 +216,7 @@ getSismo = async () => {
               layer.setIcon(markerIcon);
               //layer.acercar
               //acercar(feature.properties.lat, feature.properties.long)
-              objetoReciente(feature.properties.lat, feature.properties.long)
+              objetoReciente(feature.properties.address, feature.properties.lat, feature.properties.long, feature.properties.postalCode, feature.properties.city, feature.properties.state, feature.properties.phone)
 
           }
       }).addTo(map)
