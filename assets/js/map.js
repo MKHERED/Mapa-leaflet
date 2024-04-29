@@ -1,16 +1,23 @@
 var map = L.map('map', {
-    center: [7.0596886,-66.0217061],
-    zoom: 6,
+    //center: [7.0596886,-66.0217061],
+    zoomControl: false,
+    zoom: 5,
     //minZoom: 10,
     //maxZoom: 18,
     //maxBounds: [[37.65882,-5.01595], [38.03836,-4.33411]]
 });
 
 var basemapOSM = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-  attribution: 'Tiles courtesy of <a href="http://openstreetmap.se/" target="_blank">OpenStreetMap Sweden</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+  attribution: 'by Mike Naranjo'
 });
 
 basemapOSM.addTo(map);
+
+L.control.zoom({
+  zoomInTitle: 'Acercar',
+  zoomOutTitle: 'Alejar',
+  position: "topright",
+}).addTo(map)
 
 /* Práctica 6.- Añadiendo capa vectorial GeoJSON (JQuery) */
 /*
@@ -139,8 +146,84 @@ getData()
 
 
 
-  /*
-  $fp = fopen("maravilla.json", "w");
-  fwrite($fp, $jsondatos);
-  fclose($fp); 
-  */
+
+
+getSismo = async () => {
+  var responsesismo = await fetch('./maravilla.json');
+  const dataResponsesismos = await responsesismo.json();
+  var date = dataResponsesismos.features;
+  
+  console.log(date)
+
+  const getLine = (nameLine) => date.filter(date => date.type.includes(nameLine));
+
+  const sismosOcurridos = getLine("Feature");
+
+  let sismoIcon = L.icon({
+      iconUrl: './img/marker4.png',
+      
+      iconSize:     [80, 40], // size of the icon
+      iconAnchor:   [50, 50], // point of the icon which will correspond to marker's location
+      popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
+      })
+
+  let markerIcon = L.icon({
+      iconUrl: './img/marker4.png',
+      
+      iconSize:     [50, 50], 
+      })
+    /*
+  const acercar = function(ev) {
+      var coord = ev.latlng.toString().split(',');
+      var lat = coord[0].split('(');
+      var lng = coord[1].split(')');
+
+      map.flyTo([lat[1], lng[0]], 14);
+  }
+*/
+
+
+  function objetoReciente(lat, long){
+    barra = document.querySelector("#sidebar")
+    //<div class="border-top border-bottom pb-1 p-2"><b>a 20 km de tal parte</b><p>Fecha y hora · profundidad 0.0km <br> Magnitud 3.2</p></div>
+    barra.insertAdjacentHTML('afterbegin','<div class="border-top border-bottom pb-1 p-2 bg-light" onclick="acercar('+lat+','+long+')"><b>a 20 km de tal parte</b><p>Fecha y hora · profundidad 0.0km <br> Magnitud 3.2</p></div>')
+  }
+
+  marcador = L.geoJson(sismosOcurridos, {
+          onEachFeature: function(feature, layer){
+              layer.bindPopup(
+                  '<h4 style="font-size: 17px !important; text-decoration-line: underline; text-decoration-color: orange; margin-bottom: 0px !important;">Información del sismo</h4>'+
+                  
+                  '<b>Fecha: </b>'+ feature.properties.postalCode+
+                  '<br>'+
+                  '<b>Hora (HLV): </b>'+ feature.properties.city+
+                  '<br>'+
+                  '<b>Magnitud: </b>'+ feature.properties.phone+
+                  '<br>'+
+                  '<b>Epicentro</b>'+
+                  '<br>'+
+                      '<b> &nbsp; Latitud: </b>' + feature.properties.lat+ '°'+
+                      '<br>'+
+                      '<b> &nbsp; Longitud: </b>'+ feature.properties.long+ '°'+
+                      '<br>'+
+                      '<p style="margin:0px; max-width:170px" ><b> &nbsp; Localizado a: </b>'+ feature.properties.address+ '</p>'+
+                      
+                  '<b>Profundidad: </b>'+ feature.properties.state
+                  );
+                
+              layer.setIcon(markerIcon);
+              //layer.acercar
+              //acercar(feature.properties.lat, feature.properties.long)
+              objetoReciente(feature.properties.lat, feature.properties.long)
+
+          }
+      }).addTo(map)
+
+    map.fitBounds(marcador.getBounds())
+}
+
+getSismo()
+
+function acercar(lat, long) {
+  map.flyTo([lat, long], 10);
+}
